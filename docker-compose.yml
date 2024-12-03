@@ -1,0 +1,50 @@
+services:
+  stats-server:
+    build: pb-stats-service/stats-server
+    image: stats-server-image
+    container_name: stats-server
+    ports:
+      - "9090:9090"
+    depends_on:
+      - stats-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/pb-stats
+      - SPRING_DATASOURCE_USER=postgres
+      - SPRING_DATASOURCE_PASSWORD=12345
+      - SPRING_DATASOURCE_DRIVER-CLASS-NAME=org.postgresql.Driver
+
+  stats-db:
+    image: postgres:16-alpine
+    container_name: stats-db
+    ports:
+      - "6541:5432"
+    environment:
+      - POSTGRES_DB=pb-stats
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=12345
+
+
+  pb-main-service:
+    build: pb-main-service
+    image: pb-main-service-image
+    container_name: pb-main
+    ports:
+      - "8080:8080"
+    depends_on:
+      - pb-db
+      - stats-server
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://pb-db:5432/pb-main
+      - SPRING_DATASOURCE_USER=postgres
+      - SPRING_DATASOURCE_PASSWORD=12345
+      - SPRING_DATASOURCE_DRIVER-CLASS-NAME=org.postgresql.Driver
+
+  pb-db:
+    image: postgres:16-alpine
+    container_name: pb-db
+    ports:
+      - "6540:5432"
+    environment:
+      - POSTGRES_DB=pb-main
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=12345
